@@ -115,7 +115,7 @@ impl d::Device<B> for Device {
                     format: attachment
                         .format
                         .map_or(vk::Format::UNDEFINED, conv::map_format),
-                    samples: vk::SampleCountFlags::TYPE_1, // TODO: multisampling
+                    samples: conv::map_sample_count(attachment.samples), // TODO: multisampling
                     load_op: conv::map_attachment_load_op(attachment.ops.load),
                     store_op: conv::map_attachment_store_op(attachment.ops.store),
                     stencil_load_op: conv::map_attachment_load_op(attachment.stencil_ops.load),
@@ -156,19 +156,21 @@ impl d::Device<B> for Device {
                     let colors = subpass.colors.iter().map(make_ref).collect::<Vec<_>>();
                     let depth_stencil = subpass.depth_stencil.map(make_ref);
                     let inputs = subpass.inputs.iter().map(make_ref).collect::<Vec<_>>();
+                    let resolves = subpass.resolves.iter().map(make_ref).collect::<Vec<_>>();
                     let preserves = subpass
                         .preserves
                         .iter()
                         .map(|&id| id as u32)
                         .collect::<Vec<_>>();
 
-                    attachment_refs.push((colors, depth_stencil, inputs, preserves));
+                    attachment_refs.push((colors, depth_stencil, inputs, resolves, preserves));
                 }
 
                 let &(
                     ref color_attachments,
                     ref depth_stencil,
                     ref input_attachments,
+                    ref resolve_attachments,
                     ref preserve_attachments,
                 ) = attachment_refs.last().unwrap();
 
@@ -179,7 +181,7 @@ impl d::Device<B> for Device {
                     p_input_attachments: input_attachments.as_ptr(),
                     color_attachment_count: color_attachments.len() as u32,
                     p_color_attachments: color_attachments.as_ptr(),
-                    p_resolve_attachments: ptr::null(), // TODO
+                    p_resolve_attachments: resolve_attachments.as_ptr(), // TODO
                     p_depth_stencil_attachment: match *depth_stencil {
                         Some(ref aref) => aref as *const _,
                         None => ptr::null(),

@@ -215,6 +215,19 @@ pub fn map_topology(prim: Primitive) -> vk::PrimitiveTopology {
     }
 }
 
+pub fn map_sample_count(samples: image::NumSamples) -> vk::SampleCountFlags {
+    match samples {
+        1 => vk::SampleCountFlags::TYPE_1,
+        2 => vk::SampleCountFlags::TYPE_2,
+        4 => vk::SampleCountFlags::TYPE_4,
+        8 => vk::SampleCountFlags::TYPE_8,
+        16 => vk::SampleCountFlags::TYPE_16,
+        32 => vk::SampleCountFlags::TYPE_32,
+        64 => vk::SampleCountFlags::TYPE_64,
+        _ => panic!("Unsupported sample count"),
+    }
+}
+
 pub fn map_polygon_mode(rm: pso::PolygonMode) -> (vk::PolygonMode, f32) {
     match rm {
         pso::PolygonMode::Point => (vk::PolygonMode::POINT, 1.0),
